@@ -2,65 +2,57 @@ import os
 from flask import Flask, request, jsonify
 from telegram import Bot
 from dotenv import load_dotenv
-import asyncio
-import threading
 
 load_dotenv()
 
-TOKEN = os.getenv("BOT_TOKEN")
+BOT_TOKEN = os.getenv("BOT_TOKEN")
 ADMIN_ID = int(os.getenv("ADMIN_ID"))
+
+bot = Bot(token=BOT_TOKEN)
 
 app = Flask(__name__)
 
-bot = Bot(token=TOKEN)
-
-
-async def send_message(text):
-    await bot.send_message(
-        chat_id=ADMIN_ID,
-        text=text
-    )
-
-
-@app.route("/submit", methods=["POST"])
-def submit():
-
-    data = request.json
-
-    message = f"""
-🎉 Новое подтверждение с сайта
-
-👤 Имя:
-{data.get('name')}
-
-✅ Присутствие:
-{data.get('attendance')}
-
-👥 Количество гостей:
-{data.get('guests')}
-
-🥂 Напитки:
-{data.get('drinks')}
-
-💬 Пожелание:
-{data.get('comment')}
-"""
-
-    asyncio.run(send_message(message))
-
-    return jsonify({
-        "status": "ok"
-    })
-
-
 @app.route("/")
 def home():
-    return "Bot is running"
+    return "Birthday Bot is running ❤️"
 
+@app.route("/submit", methods=["POST"])
+async def submit():
 
-if __name__ == "__main__":
+    data = request.get_json()
 
-    app.run(
-        host="0.0.0.0",
-        port=5000
-    )
+    name = data.get("name", "")
+    attend = data.get("attend", "")
+    count = data.get("count", "")
+    drinks = ", ".join(data.get("drinks", []))
+    comment = data.get("comment", "")
+
+    text = f"""
+🎉 Новое подтверждение присутствия
+
+👤 Имя:
+{name}
+
+✅ Придет:
+{attend}
+
+👥 Количество гостей:
+{count}
+
+🍾 Напитки:
+{drinks}
+
+💬 Комментарий:
+{comment}
+"""
+
+   import asyncio
+
+asyncio.run(bot.send_message(
+        chat_id=ADMIN_ID,
+        text=text
+    ))
+
+    return jsonify({
+        "success": True
+    })
