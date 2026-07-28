@@ -1,0 +1,66 @@
+import os
+from flask import Flask, request, jsonify
+from telegram import Bot
+from dotenv import load_dotenv
+import asyncio
+import threading
+
+load_dotenv()
+
+TOKEN = os.getenv("BOT_TOKEN")
+ADMIN_ID = int(os.getenv("ADMIN_ID"))
+
+app = Flask(__name__)
+
+bot = Bot(token=TOKEN)
+
+
+async def send_message(text):
+    await bot.send_message(
+        chat_id=ADMIN_ID,
+        text=text
+    )
+
+
+@app.route("/submit", methods=["POST"])
+def submit():
+
+    data = request.json
+
+    message = f"""
+🎉 Новое подтверждение с сайта
+
+👤 Имя:
+{data.get('name')}
+
+✅ Присутствие:
+{data.get('attendance')}
+
+👥 Количество гостей:
+{data.get('guests')}
+
+🥂 Напитки:
+{data.get('drinks')}
+
+💬 Пожелание:
+{data.get('comment')}
+"""
+
+    asyncio.run(send_message(message))
+
+    return jsonify({
+        "status": "ok"
+    })
+
+
+@app.route("/")
+def home():
+    return "Bot is running"
+
+
+if __name__ == "__main__":
+
+    app.run(
+        host="0.0.0.0",
+        port=5000
+    )
