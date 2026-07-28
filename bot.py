@@ -1,23 +1,24 @@
 import os
+import requests
+
 from flask import Flask, request, jsonify
-from telegram import Bot
 from dotenv import load_dotenv
 
 load_dotenv()
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
-ADMIN_ID = int(os.getenv("ADMIN_ID"))
-
-bot = Bot(token=BOT_TOKEN)
+ADMIN_ID = os.getenv("ADMIN_ID")
 
 app = Flask(__name__)
+
 
 @app.route("/")
 def home():
     return "Birthday Bot is running ❤️"
 
+
 @app.route("/submit", methods=["POST"])
-async def submit():
+def submit():
 
     data = request.get_json()
 
@@ -27,32 +28,27 @@ async def submit():
     drinks = ", ".join(data.get("drinks", []))
     comment = data.get("comment", "")
 
-    text = f"""
-🎉 Новое подтверждение присутствия
+    text = f"""🎉 Новое подтверждение
 
-👤 Имя:
-{name}
+👤 Имя: {name}
 
-✅ Придет:
-{attend}
+✅ Присутствие: {attend}
 
-👥 Количество гостей:
-{count}
+👥 Количество гостей: {count}
 
-🍾 Напитки:
-{drinks}
+🍾 Напитки: {drinks}
 
 💬 Комментарий:
 {comment}
 """
 
-   import asyncio
+    requests.post(
+        f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage",
+        json={
+            "chat_id": ADMIN_ID,
+            "text": text,
+        },
+        timeout=15,
+    )
 
-asyncio.run(bot.send_message(
-        chat_id=ADMIN_ID,
-        text=text
-    ))
-
-    return jsonify({
-        "success": True
-    })
+    return jsonify({"success": True})
