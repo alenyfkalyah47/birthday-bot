@@ -28,6 +28,7 @@ def submit():
     count = data.get("count", "")
     drinks = ", ".join(data.get("drinks", []))
     comment = data.get("comment", "")
+    other_drink = data.get("otherDrink", "")
 
     text = f"""🎉 Новое подтверждение
 
@@ -38,6 +39,9 @@ def submit():
 👥 Количество гостей: {count}
 
 🍾 Напитки: {drinks}
+
+🍹 Другой напиток:
+{other_drink if other_drink else "—"}
 
 💬 Комментарий:
 {comment}
